@@ -1,0 +1,12 @@
+path='/media/ju/New Volume/Secreto/case_1771';
+p=Preprocess(path);
+p.d.load({'raw'});
+p.d.cur=p.d.raw;
+p.qrs_trig;
+p.compute_bad_chn;
+p.compute_ssp;
+p.compute_averages;
+p.compute_borders;
+p.p_trig;
+p.compute_p_averages;
+p.save;
