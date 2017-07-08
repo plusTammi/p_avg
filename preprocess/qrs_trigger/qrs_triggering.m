@@ -1,4 +1,12 @@
 function [triggers,len_beats] = qrs_triggering(data,fs,bad_chn)
+%käyttää tällä hetkellä pan tompkin algoritmiä, joka vähän hidas testailua
+%varten kyllä, muuten vaikuttaa ihan hyvältä.
+
+%data=nxm matriisi
+%fs=sampling frequency
+%triggers=palauttaa indekseinä 
+%len_beats=määrä qrs komplekseja, joka kanavalta n on havaittu
+
     if nargin<3
         bad_chn=ones(size(data,1),1);
     end
@@ -13,7 +21,9 @@ function [triggers,len_beats] = qrs_triggering(data,fs,bad_chn)
     triggers=median_of_same(temp_mat,len_beats);
 end
 
+
 function [triggers]=median_of_same(beats,len_beats)
+%Mediaani niistä kanavista, joilla saman verran triggauksia
     l=mode(len_beats);
     beats=beats(len_beats==l,1:l);
     triggers=median(beats);

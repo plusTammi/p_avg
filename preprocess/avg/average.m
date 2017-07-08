@@ -1,4 +1,10 @@
 function [ avgs] = average( data,triggers,avg_start,avg_end )
+%data=nxm matriisi
+%triggers= ne pisteet, joiden ympäriltä tehdään keskiarvo
+%avg_start=triggeristä se määrä, kuinka paljon siirrytään taaksepäin
+%avg_end=triggeristä se määrä, kuinka paljon siirrytään eteenpäin
+
+%avgs=nx(avg_start+avg_end) matriisi, jossa kanavakohtaiset keskiarvot
     mask=avg_start:avg_end;
     avg_lenght=length(mask);
     chn_length=size(data,1);
@@ -15,5 +21,6 @@ function [ avgs] = average( data,triggers,avg_start,avg_end )
 
     avgs=reshape(data(:,mask),[chn_length,trig_length,avg_lenght]);
     avgs=reshape(mean(avgs,2),[chn_length,avg_lenght]);
+    avgs=avgs-repmat(avgs(:,1),1,avg_lenght);
 end
 

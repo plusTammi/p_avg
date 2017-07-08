@@ -1,7 +1,9 @@
 
 classdef Preprocess
-    %PREPROCESS Summary of this class goes here
-    %   Detailed explanation goes here
+    %Yhdistää kaikki muut luokat. Tämän funktion kautta kutsutaan kaikki
+    %funktiot, jotka tekevät sitten halutun toiminnon. Funktioden on
+    %tarkoitus olla melko suppeita ja ainoastaan tarjota data muille
+    %funktiolle oikeassa muodossa.
     
     properties
         d

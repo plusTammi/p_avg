@@ -1,4 +1,5 @@
 function [ssp_grads,ssp_mags] = ssp(grads,mags,projs,grad_idx,mag_idx)
+%Nopeasti kyhätty versio, pitää tarkistaa
     projections=ones(7,99);
     for i=1:7
         projections(i,:)=projs(i).data.data;

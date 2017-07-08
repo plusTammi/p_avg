@@ -5,6 +5,7 @@ p.d.cur=p.d.raw;
 p.qrs_trig;
 p.compute_bad_chn;
 p.compute_ssp;
+p.compute_baseline;
 p.compute_averages;
 p.compute_borders;
 p.p_trig;

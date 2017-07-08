@@ -1,6 +1,8 @@
 classdef Data < handle
-    %DATA Summary of this class goes here
-    %   Detailed explanation goes here
+    %Pitää sisällään kaiken data, hoitaa sen lataamisen ja tallentamisen.
+    %Jos haluaa lisätä uusia datoja, niin lisää properties kohtaan vaan
+    %muuttujan, sekä variables listaan sen nimen. var_type ei tällä
+    %hetkellä käytössä. Ainoastaan ssp-vektoreille oma lataus funktio.
     
     properties 
         raw
@@ -43,7 +45,7 @@ classdef Data < handle
         
         function load(obj,variables,measurement,force_load)
             if nargin<2
-                variables=[obj.variables];
+                variables=obj.variables;
             end
             if nargin<3
                 measurement=obj.cur_meas;
@@ -79,13 +81,12 @@ classdef Data < handle
                 eval(temp);
             end
             if ~isempty(variables)
-                temp=strfind(variables{:},'raw')
+                temp=strfind([variables{:}],'raw');
             else
-                temp=[]
+                temp=[];
             end
             if ~isempty(temp) && isempty(obj.raw)
                 obj.load_raw(measurement);
-                variables(temp{1})=[];
             end
             if ~isa(class(obj.cur),'double')
                 obj.cur=double(obj.cur);
@@ -112,9 +113,9 @@ classdef Data < handle
                 temp=strcat(temp2,'=',temp1,';');
                 eval(temp);
             end
-            raw=single(raw); %#ok<NASGU,PROPLC>
-            cur=single(cur); %#ok<NASGU,PROPLC>
-            save(path,variables{:});
+            raw=single(raw); 
+            cur=single(cur);
+            save(path,variables{:},'-append');
         end
     end
     

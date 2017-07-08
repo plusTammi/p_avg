@@ -1,6 +1,10 @@
 classdef Paths
-    %PATHS Summary of this class goes here
-    %   Detailed explanation goes here
+    %Etsii annetun kansion alta kaikki fif ja mat tyyppiset tiedostot.
+    %Tulevaisuutta ajattelen tämä luokka saatetaan poistaa kokonaan, jos
+    %unohdetaan kaikki tiedostoautomaatiot ja oletetaan, että käyttäjä
+    %antaa Proprocess luokalle vaan suoraan sen tiedoston, mille lasketaan
+    %kaikki.
+    %
     
     properties
         case_id
