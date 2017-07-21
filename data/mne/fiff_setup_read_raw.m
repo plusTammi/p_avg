@@ -67,7 +67,6 @@ end
 %
 %   Open the file
 %
-
 fprintf(1,'Opening raw data file %s...\n',fname);
 [ fid, tree ] = fiff_open(fname);
 %

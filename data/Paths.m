@@ -1,8 +1,8 @@
-classdef Paths
+classdef Paths %turha
     %Etsii annetun kansion alta kaikki fif ja mat tyyppiset tiedostot.
     %Tulevaisuutta ajattelen tämä luokka saatetaan poistaa kokonaan, jos
     %unohdetaan kaikki tiedostoautomaatiot ja oletetaan, että käyttäjä
-    %antaa Proprocess luokalle vaan suoraan sen tiedoston, mille lasketaan
+    %antaa Preprocess luokalle vaan suoraan sen tiedoston, mille lasketaan
     %kaikki.
     %
     
@@ -11,29 +11,25 @@ classdef Paths
         
         %types={'raw','cur','qrs_avgs','avgs_start','p_avgs',...
         %    'qrs_triggers','p_triggers','bad_chn','borders'};
-        types={'raw','mat'};
-        empty_paths={{''},{''}};
+        %types={'raw','mat'};
+        %empty_paths={{''},{''}};
+        %paths
         paths
 
     end
     
     methods
-        function obj = Paths(path)
-            obj.paths=containers.Map(obj.types,obj.empty_paths);
-            if exist(path)~=7
+        function obj = Paths(path,variables)
+            %obj.paths=containers.Map(obj.types,obj.empty_paths);
+            if exist(path,'file')==0
                 error('%s does not exist',path)
             end
-            files=ReadFiles(path,{'fif'});
-            sort(files)
-        	obj.paths('raw')=files;
-            files= ReadFiles(path,{'mat'});
-            if size(files,1)~=size(obj.paths('raw'),1)
-                files=obj.paths('raw');
-                for i=1:size(files,1)
-                    files(i)=strrep(files(i),'fif','mat');
-                end
+            paths=cell(length(variables),1);
+            for i=length(variables)
+                paths{i}=strcat(path,i);
             end
-            obj.paths('mat')=files;
+            obj.paths=containers.Map(variables,paths);
+
             
         end
         
