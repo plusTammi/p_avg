@@ -27,11 +27,12 @@ classdef Data < handle
         
         cur_meas='m1'
         variables={'raw','cur','qrs_avgs','avg_start','p_avgs',...
-        'qrs_triggers','p_triggers','bad_chn','projs','borders','len_chn_trigs'}
-        var_type={'single','single','double','int32','double','int32',...
-            'int32','int16','double','int32','int32'}
-        calc_type={'double','double','double','int32','double','int32',...
-            'int32','int32','double','int32','int32'}
+        'qrs_triggers','p_triggers','bad_chn','projs','borders',...
+        'len_chn_trigs','good_beats'}
+        var_type={'single','single','double','double','double','double',...
+            'double','int32','double','double','double','double'}
+        calc_type={'double','double','double','double','double','double',...
+            'double','double','double','double','double','int32'}
     end
     
     methods
@@ -57,7 +58,7 @@ classdef Data < handle
             warning('off','MATLAB:load:variableNotFound')
             load(obj.path_mat,'map');
             warning('on','MATLAB:load:variableNotFound')
-            if exist('mat','var')==0
+            if exist('map','var')==0
                 map=containers.Map();
                 save(obj.path_mat,'map','-append');
             end
@@ -159,6 +160,21 @@ classdef Data < handle
             end
         end
         
+        function remove(obj,variables)
+            if nargin<2
+                variables=obj.variables;
+                variables{end+1}='mat'
+            end
+            for i=variables
+                if strcmp(char(i),'mat')
+                    delete(obj.path_mat)
+                else
+                    delete(obj.paths(char(i)))
+                end
+                
+            end
+        end
+        
     end
     
 	methods (Access = 'private', Hidden=true)   
@@ -171,7 +187,11 @@ classdef Data < handle
                 fclose(fileID);
                 load(obj.path_mat,'map');
                 obj.sizes=map;
-                obj.values(var)=double(reshape(obj.values(var),map(var)));
+                if size(obj.values(var),1)==0
+                    obj.values(var)=obj.values(var);
+                else
+                    obj.values(var)=double(reshape(obj.values(var),map(var)));
+                end
             else
                 fprintf('file does not exist %s \n',obj.paths(var))
             end

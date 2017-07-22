@@ -26,11 +26,16 @@ classdef Choosing < handle
             for i=1:length(obj.paths)
                 i
                 p=Preprocess(char(obj.paths(i)));
-                p.d.load({'qrs_avgs','borders','avg_start'});
+                p.d.load({'qrs_avgs','borders','avg_start','bad_chn'});
+                chns=p.good_chn();
+                mags=p.good_chn(1:3:99);
+                grads=p.good_chn(setdiff(1:3:99,mags));
+                ecg=p.good_chn(109:123);
                 avgs=p.d.qrs_avgs;
-                avgs(mags,:)=avgs(mags,:)./max(max(abs(avgs(mags,:))));
-                avgs(grads,:)=avgs(grads,:)./max(max(abs(avgs(grads,:))));
-                
+                avgs(mags,:)=avgs(mags,:)/max(max(abs(avgs(mags,:))));
+                avgs(grads,:)=avgs(grads,:)/max(max(abs(avgs(grads,:))));
+                avgs(ecg,:)=avgs(ecg,:)/max(max(abs(avgs(ecg,:))));
+                %avgs=p.d.qrs_avgs(p.good_chn,:);
                 if ~p.d.is_loaded({'borders'},false)
                     obj.borders{i}=zeros(5,1);
                 else
@@ -51,7 +56,7 @@ classdef Choosing < handle
                     cur_before=cur
                     clf();
                     hold on
-                    plot(obj.qrs_avgs{cur}(1:3:99,:)','r');
+                    plot(obj.qrs_avgs{cur}(1:3:99+2,:)','r');
                     points=plot(obj.borders{cur},zeros(size(obj.borders{cur})),'.');
                 end
                 [x,~,button]=ginput(1);

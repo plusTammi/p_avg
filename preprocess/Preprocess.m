@@ -57,21 +57,18 @@ classdef Preprocess
         
         function compute_baseline_lsqspline(obj)
             obj.is_loaded({'cur','qrs_triggers','borders'});
-            bl=baseline_lsqspline(obj.d.cur,obj.d.qrs_triggers,obj.d.borders);
+            bl=baseline_lsqspline(obj.d.cur,double(obj.d.qrs_triggers),double(obj.d.borders));
             obj.d.cur=obj.d.cur-bl;
         end
         
-        function compute_averages(obj,avg_start,avg_end,corr)
-            if nargin<4
-                corr=0
-            end
-            obj.is_loaded({'cur','qrs_triggers'});
+        function compute_averages(obj,avg_start,avg_end)
+            obj.is_loaded({'cur','qrs_triggers','good_beats'});
             if nargin<3
                 avg_start=-500;
                 avg_end=500;
             end
-            obj.d.qrs_avgs=average(obj.d.cur(obj.good_chn,:),obj.d.qrs_triggers,avg_start,avg_end,corr);
-            obj.d.avg_start=avg_start
+            obj.d.qrs_avgs=average(obj.d.cur,obj.d.qrs_triggers(obj.d.good_beats),avg_start,avg_end);
+            obj.d.avg_start=avg_start;
         end
         
         function compute_borders(obj)
@@ -81,17 +78,38 @@ classdef Preprocess
         
         function p_trig(obj)  
             obj.is_loaded({'bad_chn','qrs_triggers','borders'});
-            obj.d.p_triggers=p_trig(obj.d.cur(~obj.d.bad_chn,:),obj.d.qrs_triggers,obj.d.borders);
+            trigs=double(obj.d.qrs_triggers);
+            p_triggers=p_trig(obj.d.cur(obj.good_chn,:),trigs,obj.d.borders);
+            obj.d.p_triggers=trigs+p_triggers(1)+round((obj.d.borders(1)+obj.d.borders(2))/2);
             
         end
         
-        function compute_p_averages(obj,corr)
+        function asd=qrs_trig_corr(obj)  
+            obj.is_loaded({'bad_chn','qrs_triggers','borders'});
+            asd=p_trig(obj.d.cur(~obj.d.bad_chn,:),obj.d.qrs_triggers,[obj.d.borders(3),0,obj.d.borders(4)]);
+            
+        end
+        
+        function found_beats(obj,triggers,start,ending,chns)
+            obj.is_loaded({'bad_chn','cur'});
+            if nargin<3
+                start=-300;
+                ending=300;
+            end
+            if nargin<5
+                chns=obj.good_chn();
+            end
+            
+            obj.d.good_beats=good_beats(obj.d.cur(chns,:),triggers,start,ending,200);
+        end
+        
+        function compute_p_averages(obj)
             obj.is_loaded({'borders','cur','qrs_triggers','p_triggers'});
-            p_start=-300;
-            p_end=obj.d.borders(2);
-            unique(obj.d.p_triggers(3,:))
-            chns=obj.good_chn();
-            obj.d.p_avgs=average(obj.d.cur(chns(unique(obj.d.p_triggers(3,:))),:),int32(obj.d.qrs_triggers)+int32(obj.d.p_triggers(1,:)),p_start,p_end,corr);
+            p_rad=round((obj.d.borders(2)-obj.d.borders(1))/2);
+            p_start=-p_rad;
+            p_end=p_rad;
+            trigs=obj.d.p_triggers;
+            obj.d.p_avgs=average(obj.d.cur,trigs,p_start,p_end);
         end
         
     end

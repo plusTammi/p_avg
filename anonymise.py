@@ -36,7 +36,7 @@ for i in matches:
 			except:
 				case_numb+=[folders[-1][1:5]]
 print change
-for idx,i in  enumerate(change[:4]):
+for idx,i in  enumerate(change):
 	folders=i.split('/')
 	folders[-3]='case_'+str(case_numb[idx])
 	f=os.path.join('/',*folders)

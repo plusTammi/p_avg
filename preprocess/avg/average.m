@@ -1,4 +1,4 @@
-function [ avgs] = average( data,triggers,avg_start,avg_end,corr )
+function [ avgs] = average( data,triggers,avg_start,avg_end )
 %data=nxm matriisi
 %triggers= ne pisteet, joiden ympäriltä tehdään keskiarvo
 %avg_start=triggeristä se määrä, kuinka paljon siirrytään taaksepäin
