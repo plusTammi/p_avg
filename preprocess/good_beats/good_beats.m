@@ -3,7 +3,6 @@ function [ good_beats,best_corr ] = good_beats( data,triggers,avg_start,avg_end,
     avg_lenght=length(mask);
     chn_length=size(data,1);
     mask=repmat(mask,length(triggers),1);
-
     trigs=repmat(triggers.',1,size(mask,2));
     mask=int32(trigs)+int32(mask);
     mask=mask(sum(mask<0,2)==0,:);
@@ -17,12 +16,21 @@ function [ good_beats,best_corr ] = good_beats( data,triggers,avg_start,avg_end,
         corr_mat(i,:,:)= corrcoef(squeeze(avgs(i,:,:))');
         %fprintf('%d,%d\n',i,mean(mean(corr_mat(i,:,:))))
     end
+    
     mean_corr=squeeze(max(corr_mat));
-    %mean_corr(mean_corr<corr)=0;
-    Z = linkage(1-mean_corr,'single');
-    [groups,best_corr]=get_best_group(Z,treshold);
 
-    %dendrogram(Z,0,'colorthreshold',1-0.95)
+    %imagesc(mean_corr)
+    mean_corr=squareform(mean_corr-eye(size(mean_corr)));
+
+    %mean_corr(mean_corr<corr)=0;
+    Z = linkage(1-mean_corr,'average');
+    [groups,best_corr]=get_best_group(Z,treshold);
+    groups=cluster(Z,'cutoff',1-treshold,'criterion','distance');
+    [a,b]=hist(groups,unique(groups));
+    [~,idx]=max(a);
+
+    %dendrogram(Z,0,'colorthreshold',1-treshold)
+    %inconsistent(Z)
     %imagesc(mean_corr)
     good_beats=groups;
 

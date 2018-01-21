@@ -1,0 +1,3 @@
+[submodule "mne"]
+	path = mne
+	url = https://github.com/mne-tools/mne-matlab

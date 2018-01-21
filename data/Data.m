@@ -1,60 +1,61 @@
 classdef Data < handle
-    %Pitää sisällään kaiken data, hoitaa sen lataamisen ja tallentamisen.
-    %Jos haluaa lisätä uusia datoja, niin lisää properties kohtaan vaan
-    %muuttujan, sekä variables listaan sen nimen. var_type ei tällä
-    %hetkellä käytössä. Ainoastaan ssp-vektoreille oma lataus funktio.
+    %This class is where the data will be stored, and it handles loading
+    %and saving of the data
     
     properties 
-        %raw
-        %cur
-        %qrs_avgs
-        %avg_start
-        %p_avgs
-        %qrs_triggers
-        %p_triggers
-        %bad_chn
-        %projs
-        %borders
-        %len_chn_trigs
         
-        paths
-        path_mat
-        path_fif
+        paths           %A path for every variable where it can be saved
+        path_mat        %A path for mat file, which contains variable map, 
+                        %which contains the sizes of the variables
+        path_fif        %A path for the raw data
         
-        save_types
-        values
-        sizes
+        save_types      %List for the numerical types in which the variables are to be saved
+        values          %Map which will contain data of all variables, key will be in variables list
+        sizes           %Map which contains the sizes of variables
         
-        cur_meas='m1'
-        variables={'raw','cur','qrs_avgs','avg_start','p_avgs',...
+        %To add new variable, add it's name to varables list, the numerical
+        %type in witch you want to save it in var_type list, and the
+        %numerical type in witch you want to load it to calc_type
+        variables={'raw','cur','qrs_avgs','avg_start','p_avgs',... 
         'qrs_triggers','p_triggers','bad_chn','projs','borders',...
         'len_chn_trigs','good_beats'}
         var_type={'single','single','double','double','double','double',...
             'double','int32','double','double','double','double'}
         calc_type={'double','double','double','double','double','double',...
-            'double','double','double','double','double','int32'}
+            'double','double','double','double','double','double'}
     end
     
     methods
         function obj = Data(path)
-            if exist(path,'file')==0
+            %path argument is a file name to the raw fif file.
+            if exist(path,'file')==0                %Make sure the fif file exist
                 error('%s does not exist',path);
             end
+            
+            %Make the save names for variables. File names will be the same
+            %as fif file, mut where the .fif is replaced with
+            %_variable_name.bin
             paths=cell(length(obj.variables),1);
             for i=1:length(obj.variables)
                 paths{i}=strrep(path,'.fif',strcat('_',obj.variables{i},'.bin'));
-                
             end
+            
+            %The mat file containing sizes will be the same as raw file,
+            %but .fif replaced with .mat
             path_mat=strrep(path,'.fif','.mat');
+            %Initialaising path variables
             obj.path_fif=path;
             obj.paths=containers.Map(obj.variables,paths);
             obj.path_mat=path_mat;
             
-            
+            %If the file containing sizes doesn't exist, it will be made
+            %here
             if exist(obj.path_mat,'file')==0
                 map=containers.Map();
                 save(obj.path_mat,'map');
             end
+            %If the file existed, but didn't contain variable map, it will
+            %be made here
             warning('off','MATLAB:load:variableNotFound')
             load(obj.path_mat,'map');
             warning('on','MATLAB:load:variableNotFound')
@@ -62,6 +63,7 @@ classdef Data < handle
                 map=containers.Map();
                 save(obj.path_mat,'map','-append');
             end
+            %Initialaising other variables
             obj.save_types=containers.Map(obj.variables,obj.var_type);
             obj.values=containers.Map();
             obj.sizes=containers.Map();
@@ -70,17 +72,24 @@ classdef Data < handle
         end
         
         function bool=load_raw(obj)
+            %Load raw files from fif
             r=fiff_setup_read_raw(obj.path_fif);
             obj.values('raw')=fiff_read_raw_segment(r);
+            obj.sizes('raw')=size(obj.values('raw'));
             bool=true;
         end
         
         function load_projs(obj)
+            %Load ssp projections
             [fid,tree,~]=fiff_open(obj.path_fif);
             obj.values('projs')=fiff_read_proj(fid,tree);
         end
         
         function bool=is_loaded(obj,variables,err)
+            %Check if the variable names in variables are loaded. Return
+            %true if variables are loaded. If err=true, this function will 
+            %throw error if variable is not loaded, otherwise it will 
+            %return false
             if nargin<3
                 err=true;
             end
@@ -101,6 +110,12 @@ classdef Data < handle
         end
         
         function load(obj,variables,force_load)
+            %Variables is cell array containing variables to be loaded. If
+            %not given, all variables will be loaded. If force_load is
+            %true, variables will be loaded from file even if they are
+            %already loaded.
+            %If variable is not saved, will print the name of the variable
+            %not loaded and continue.
             if nargin<2
                 variables=obj.variables;
             end
@@ -114,9 +129,12 @@ classdef Data < handle
             for i=variables
                 i=char(i);
                 switch char(i)
+                    %fif files needs different loading fucntions
                     case 'fif'
                         obj.load_raw()
                     case 'raw'
+                        %If there is raw file saved as binary file, it will
+                        %be loaded, otherwise fif.
                         if exist(obj.paths(i),'file')
                             obj.load_data(i)
                         else
@@ -138,6 +156,9 @@ classdef Data < handle
         
         
         function save(obj,variables)
+            %Variables is cell array containing variables to be saved. If
+            %not given, all will be saved. Currently ssp projections are not
+            %saved.
             if nargin<2
                 variables=obj.variables;
             end
@@ -147,6 +168,7 @@ classdef Data < handle
             obj.sizes=map;
             for i=variables
                 i=char(i);
+                %Skip ssp projections
                 if strcmp(i,'projs')
                     continue %Temporary
                 end
@@ -161,6 +183,8 @@ classdef Data < handle
         end
         
         function remove(obj,variables)
+            %Deletes all binary files and mat files that this class has
+            %made.
             if nargin<2
                 variables=obj.variables;
                 variables{end+1}='mat'
@@ -177,9 +201,10 @@ classdef Data < handle
         
     end
     
-	methods (Access = 'private', Hidden=true)   
-        
+	methods (Access = 'private', Hidden=true)
         function load_data(obj,var)
+            %Load function, which loads variable given, or prints its path
+            %if it is not saved.
             var=char(var);
             if exist(obj.paths(char(var)),'file')==2
                 fileID = fopen(obj.paths(var));
@@ -203,7 +228,8 @@ classdef Data < handle
     end
             
     methods (Access = 'public', Hidden=true)
-        
+        %These methods overload dot notation, so you can acces variable mat
+        %with obj.variable notation.
         function varargout = subsref(obj, subStruct)
             
             if subStruct(1).type=='.'

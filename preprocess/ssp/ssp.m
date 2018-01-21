@@ -1,6 +1,12 @@
 function [ssp_grads,ssp_mags] = ssp(grads,mags,projs,grad_idx,mag_idx)
-    projections=ones(7,99);
-    for i=1:7
+    nmags=[];
+    ngrads=[];
+    for i=1:length(projs)
+        if strfind(projs(i).desc,'mag')
+            nmags=[nmags,i];
+        elseif strfind(projs(i).desc,'grad')
+            ngrads=[ngrads,i];
+        end
         projs(i).active=1;
     end
 %     [U,S,~]=svd(projections(1:5,mag_idx).');
@@ -18,11 +24,11 @@ function [ssp_grads,ssp_mags] = ssp(grads,mags,projs,grad_idx,mag_idx)
 %     ssp_grads=proj*grads;    
     
     chns=projs(1).data.col_names(mag_idx);
-    [proj,~,~]=mne_make_projector(projs(1:5),chns,[]);
+    [proj,~,~]=mne_make_projector(projs(nmags),chns,[]);
     ssp_mags=proj*mags;
     
     chns=projs(1).data.col_names(grad_idx);
-    [proj,~,~]=mne_make_projector(projs(6:end),chns,[]);
+    [proj,~,~]=mne_make_projector(projs(ngrads),chns,[]);
     ssp_grads=proj*grads;
 end
 

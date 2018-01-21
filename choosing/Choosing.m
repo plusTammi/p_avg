@@ -26,23 +26,28 @@ classdef Choosing < handle
             for i=1:length(obj.paths)
                 i
                 p=Preprocess(char(obj.paths(i)));
-                p.d.load({'qrs_avgs','borders','avg_start','bad_chn'});
+                obj.paths(i)
+                p.data.load({'qrs_avgs','borders','avg_start','bad_chn'});
+                if ~p.is_loaded({'qrs_avgs','avg_start','bad_chn'},false)
+                    continue
+                end
                 chns=p.good_chn();
                 mags=p.good_chn(1:3:99);
                 grads=p.good_chn(setdiff(1:3:99,mags));
-                ecg=p.good_chn(109:123);
-                avgs=p.d.qrs_avgs;
+                ecg=p.good_chn(109:size(p.data.qrs_avgs,1));
+                avgs=p.data.qrs_avgs;
+                size(p.data.qrs_avgs)
                 avgs(mags,:)=avgs(mags,:)/max(max(abs(avgs(mags,:))));
                 avgs(grads,:)=avgs(grads,:)/max(max(abs(avgs(grads,:))));
                 avgs(ecg,:)=avgs(ecg,:)/max(max(abs(avgs(ecg,:))));
-                %avgs=p.d.qrs_avgs(p.good_chn,:);
-                if ~p.d.is_loaded({'borders'},false)
+                %avgs=p.data.qrs_avgs(p.good_chn,:);
+                if ~p.is_loaded({'borders'},false)
                     obj.borders{i}=zeros(5,1);
                 else
-                    obj.borders{i}=p.d.borders-p.d.avg_start;
+                    obj.borders{i}=p.data.borders-p.data.avg_start;
                 end
                 obj.qrs_avgs{i}=avgs;
-                obj.avg_start{i}=p.d.avg_start;
+                obj.avg_start{i}=p.data.avg_start;
             end
         end
         
@@ -56,7 +61,9 @@ classdef Choosing < handle
                     cur_before=cur
                     clf();
                     hold on
-                    plot(obj.qrs_avgs{cur}(1:3:99+2,:)','r');
+                    if size(obj.qrs_avgs{cur},2)~=0
+                         plot(obj.qrs_avgs{cur}(1:3:99+2,:)','r');
+                    end
                     points=plot(obj.borders{cur},zeros(size(obj.borders{cur})),'.');
                 end
                 [x,~,button]=ginput(1);
@@ -102,8 +109,8 @@ classdef Choosing < handle
             for i=1:length(obj.paths)
                 i
                 p=Preprocess(char(obj.paths(i)));
-                p.d.borders=obj.borders{i}+obj.avg_start{i};
-                p.d.save({'borders'});
+                p.data.borders=obj.borders{i}+obj.avg_start{i};
+                p.data.save({'borders'});
             end
         end
     end
